@@ -4,6 +4,41 @@
 
 FLEX is a team graduation project for turning a user's goals and daily schedule into a productivity plan. The React interface pairs a guided planner with a chat assistant. A Python retrieval service searches study materials to give the assistant context for its responses.
 
+## How FLEX builds a weekly plan
+
+The planner combines a goal, the number of weeks available, and work preferences with up to five passages from the study library. The API checks the generated JSON and normalizes the tasks before sending the plan back to the interface.
+
+```mermaid
+flowchart TD
+    A["Goal, schedule and preferences"] --> B["POST /api/form"]
+    B --> C["Map preferences to a profile"]
+    C --> D["Retrieve passages for the goal"]
+    C --> E["Build the weekly planning prompt"]
+    D --> E
+    E --> F["Generate and parse the plan"]
+    F --> G{"Required fields and weekly list present?"}
+    G -->|Yes| H["Normalize tasks and return weekly milestones"]
+    G -->|No| I["Return a plan-generation error"]
+```
+
+[Planner endpoint and response checks](src/services/api.py)
+
+## How a follow-up question gets an answer
+
+FLEX uses two sources of context for each reply. Earlier turns tell it what the user has already discussed. A FAISS search over TF-IDF vectors retrieves up to three study passages for the new question.
+
+```mermaid
+flowchart TD
+    A["POST /api/chat/interactive"] --> B["Append the question to conversation history"]
+    A --> C["Search the study index for the question"]
+    B --> D["Build a prompt with conversation and passages"]
+    C --> D
+    D --> E["Generate the coaching reply"]
+    E --> F["Append the reply and return updated history"]
+```
+
+At startup, FLEX tries to load its saved index. If loading fails, it reads PDFs from `Study_Materials`, splits them into chunks, and saves the rebuilt index. [Retrieval and chat logic](src/services/rag_system.py) · [Vector index](src/services/vector_db.py)
+
 ## How the pieces fit
 
 | Component | Where to look |
