@@ -34,8 +34,8 @@ npm run dev
 ## 👥 Team
 
 - Mohamed Wael
-- Mohamed Amr
 - Kareem Nagah
+- Mohamed Amr
 - Amr Amgad
 - Youssef Alsebaey
 - Loay Ayman
